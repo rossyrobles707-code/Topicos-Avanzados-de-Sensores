@@ -1,0 +1,27 @@
+%% PUNTO 1.2: OBTENCIÓN DE PITCH Y ROLL
+
+[gyro_raw, t_gyro] = angvellog(m); 
+
+gx = gyro_raw(:,1);
+gy = gyro_raw(:,2);
+
+dt = mean(diff(t_gyro));
+
+pitch_gyro_mpu = cumtrapz(t_gyro, gy) * (180/pi);
+roll_gyro_mpu = cumtrapz(t_gyro, gx) * (180/pi);
+
+figure('Name', 'MPU6050 Gyroscope Integration');
+
+plot(t_gyro, pitch_gyro_mpu, 'Color', [0.6 0.2 0]); 
+hold on;
+
+plot(t_gyro, roll_gyro_mpu, 'Color', [0 0.4 0.2]);
+
+title('Punto 1.2: Drift en Giroscopio MPU6050');
+
+xlabel('Tiempo (s)');
+ylabel('Grados (°)');
+
+legend('Pitch', 'Roll');
+
+grid on;
