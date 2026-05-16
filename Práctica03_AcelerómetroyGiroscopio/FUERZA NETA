@@ -1,0 +1,53 @@
+%% PUNTO 6: DETERMINACIÓN DE FUERZA NETA
+
+masa_objeto = 0.200;
+
+num_pruebas = 10;
+
+tabla_fuerzas = zeros(num_pruebas, 1);
+
+fprintf('--- INICIO DE EXPERIMENTO ---\n');
+
+for n = 1:num_pruebas
+
+    fprintf('Ensayo #%d\n', n);
+
+    pause(1);
+
+    m.Logging = 1;
+
+    pause(1.5);
+
+    m.Logging = 0;
+
+    [acc_data, ~] = accellog(m);
+
+    a_max = max(abs(acc_data(:,2)));
+
+    tabla_fuerzas(n) = masa_objeto * a_max;
+
+    fprintf('Fuerza: %.4f N\n', tabla_fuerzas(n));
+
+    discardlogs(m);
+
+end
+
+f_promedio = mean(tabla_fuerzas);
+
+fprintf('\nFuerza promedio: %.4f N\n', f_promedio);
+
+figure('Name', 'Punto 6: Fuerza Neta');
+
+bar(tabla_fuerzas, 'FaceColor', [0.1 0.4 0.6]);
+
+hold on;
+
+yline(f_promedio, 'r', 'LineWidth', 2, 'Label', 'Promedio');
+
+title('Punto 6: Fuerza en 10 Ensayos');
+
+xlabel('Número de Ensayo');
+
+ylabel('Fuerza (N)');
+
+grid on;
