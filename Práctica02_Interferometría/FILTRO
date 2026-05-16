@@ -1,0 +1,51 @@
+%% CON FILTRO
+#include "Adafruit_VL53L0X.h"
+
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+
+float alpha = 0.25;          // factor EMA
+float distancia_filtrada = 0; // guarda el valor filtrado anterior
+bool primera_vez = true;      // para inicializar el filtro
+
+void setup() {
+  Serial.begin(115200);
+
+  while (! Serial) {
+    delay(1);
+  }
+  
+  Serial.println("Adafruit VL53L0X test");
+  if (!lox.begin()) {
+    Serial.println(F("Failed to boot VL53L0X"));
+    while(1);
+  }
+
+  Serial.println(F("VL53L0X API Simple Ranging example\n\n")); 
+}
+
+void loop() {
+  VL53L0X_RangingMeasurementData_t measure;
+
+  lox.rangingTest(&measure, false);
+
+  if (measure.RangeStatus != 4) {
+
+    float distancia = measure.RangeMilliMeter;
+
+    // Inicializar el filtro la primera vez
+    if (primera_vez) {
+      distancia_filtrada = distancia;
+      primera_vez = false;
+    } else {
+      // Aplicar el filtro EMA
+      distancia_filtrada = alpha * distancia + (1 - alpha) * distancia_filtrada;
+    }
+
+    Serial.print("Distancia cruda: ");
+    Serial.print(distancia);
+    Serial.print("   |   Distancia filtrada: ");
+    Serial.println(distancia_filtrada);
+
+  } else {
+    Serial.println(" out of range ");
+  }
