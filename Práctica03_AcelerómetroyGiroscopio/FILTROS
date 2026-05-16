@@ -1,0 +1,64 @@
+%% PUNTO 1.4: FILTRO COMPLEMENTARIO
+
+discardlogs(m);
+
+m.Logging = 1;
+
+disp('Capturando datos...');
+
+pause(10);
+
+m.Logging = 0;
+
+[acc, t_a] = accellog(m);
+[gyro, t_g] = angvellog(m);
+
+n = min(length(t_a), length(t_g));
+
+acc = acc(1:n,:);
+gyro = gyro(1:n,:);
+t = t_a(1:n);
+
+dt = mean(diff(t));
+
+alpha = 0.98;
+
+p_f = 0;
+r_f = 0;
+
+P_FINAL = zeros(n,1);
+R_FINAL = zeros(n,1);
+
+for k = 2:n
+
+   p_acc = atan2(-acc(k,1), sqrt(acc(k,2)^2 + acc(k,3)^2)) * (180/pi);
+
+   r_acc = atan2(acc(k,2), acc(k,3)) * (180/pi);
+
+   p_f = alpha * (p_f + gyro(k,2)*dt*(180/pi)) + (1-alpha) * p_acc;
+
+   r_f = alpha * (r_f + gyro(k,1)*dt*(180/pi)) + (1-alpha) * r_acc;
+
+   P_FINAL(k) = p_f;
+
+   R_FINAL(k) = r_f;
+
+end
+
+figure('Name', 'Punto 1.4 - Filtro Complementario');
+
+plot(t, P_FINAL, 'g', 'LineWidth', 2); 
+hold on;
+
+plot(t, R_FINAL, 'm', 'LineWidth', 2);
+
+title('1.4: Pitch y Roll');
+
+xlabel('Tiempo (s)');
+ylabel('Grados (°)');
+
+ylim([-90 90]);
+
+legend('Pitch', 'Roll');
+
+grid on;
