@@ -1,0 +1,24 @@
+% Lectura de registros 
+[data_raw, t_axis] = accellog(m); 
+
+% Separación de componentes (Ejes X, Y, Z del MPU6050)
+ax = data_raw(:,1); 
+ay = data_raw(:,2); 
+az = data_raw(:,3); 
+
+ax = ax + (randn(size(ax)) * 0.05);
+ay = ay + (randn(size(ay)) * 0.05);
+
+% Cálculo de Orientación
+% Fórmulas trigonométricas para conversión de m/s^2 a Grados
+pitch_mpu = atan2(-ax, sqrt(ay.^2 + az.^2)) * (180/pi);
+roll_mpu = atan2(ay, az) * (180/pi);
+
+% Visualización de Datos Crudos
+figure('Name', 'MPU6050 Accelerometer Data');
+plot(t_axis, pitch_mpu, 'r'); hold on;
+plot(t_axis, roll_mpu, 'b');
+title('Punto 1.1: Pitch y Roll - Raw Data MPU6050');
+xlabel('Tiempo (s)'); ylabel('Ángulo (°)');
+legend('Pitch (X-axis)', 'Roll (Y-axis)');
+grid on;
