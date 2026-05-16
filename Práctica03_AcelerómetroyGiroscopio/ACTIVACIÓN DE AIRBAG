@@ -1,0 +1,49 @@
+%% PUNTO 3: SIMULACIÓN DE ACTIVACIÓN DE AIRBAG
+
+sensibilidad_mpu = 2048;
+
+umbral_g = 3.5;
+
+m.Logging = 1;
+
+disp('Sistema armado...');
+
+pause(8);
+
+m.Logging = 0;
+
+[data_raw, t] = accellog(m);
+
+accel_g = sqrt(data_raw(:,1).^2 + data_raw(:,2).^2 + data_raw(:,3).^2) / 9.81;
+
+impacto_detectado = any(accel_g > umbral_g);
+
+figure('Name', 'Análisis de Impacto - MPU6050');
+
+plot(t, accel_g, 'Color', [0.2 0.2 0.2], 'LineWidth', 1);
+
+hold on;
+
+yline(umbral_g, 'r--', 'Umbral');
+
+if impacto_detectado
+
+    [max_val, idx] = max(accel_g);
+
+    plot(t(idx), max_val, 'ro', 'MarkerSize', 12, 'MarkerFaceColor', 'r');
+
+    title('Punto 3: Airbag Activado');
+
+    fprintf('Activación detectada en %.2f s con %.2f G\n', t(idx), max_val);
+
+else
+
+    title('Punto 3: Sin Activación');
+
+end
+
+ylabel('Aceleración (G)');
+
+xlabel('Tiempo (s)');
+
+grid on;
