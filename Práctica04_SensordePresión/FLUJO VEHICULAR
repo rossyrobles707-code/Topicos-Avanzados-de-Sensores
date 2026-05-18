@@ -1,0 +1,54 @@
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 bmp;
+
+float presion;
+float presionBase;
+float diferencia;
+
+void setup() {
+  Serial.begin(9600);
+  // Presion inicial de referencia
+  presionBase = bmp.readPressure();
+
+  Serial.println("Sistema de flujo vehicular");
+}
+
+void loop() {
+
+  presion = bmp.readPressure();
+
+  diferencia = presion - presionBase;
+
+  Serial.println("-------------------");
+
+  Serial.print("Presion actual: ");
+  Serial.println(presion);
+
+  Serial.print("Diferencia: ");
+  Serial.println(diferencia);
+
+  // Clasificacion de vehiculos
+  if(diferencia > 20 && diferencia < 100) {
+
+    Serial.println("Vehiculo ligero detectado");
+  }
+
+  else if(diferencia >= 100 && diferencia < 300) {
+
+    Serial.println("Vehiculo mediano detectado");
+  }
+
+  else if(diferencia >= 300) {
+
+    Serial.println("Vehiculo pesado detectado");
+  }
+
+  else {
+
+    Serial.println("Sin deteccion");
+  }
+
+  delay(1000);
+}
