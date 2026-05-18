@@ -1,0 +1,52 @@
+% --- 1. Cargar los datos ---
+% Asegúrate de que el archivo CSV esté en la misma carpeta que este script
+% y que no tenga los encabezados de texto en la primera fila (o usa readmatrix si es puro número)
+datos = readtable('datos_termicos.csv'); 
+
+% Asignar las columnas a variables (ajusta los nombres de las columnas según tu CSV)
+t = datos.Tiempo;
+y_crudo = datos.Temp_LM35; % Puedes cambiar a datos.Temp_BMP para comparar
+
+% --- 2. Acondicionamiento de la señal ---
+% Restamos la temperatura ambiente (el valor en t=0) para partir del origen (0,0)
+temp_ambiente = y_crudo(1);
+y = y_crudo - temp_ambiente;
+
+% --- 3. Definir la entrada (Escalón Unitario) ---
+% El cautín se encendió y su "señal" de encendido se mantuvo en 1
+u = ones(size(t));
+
+% --- 4. Identificación del Sistema ---
+% Creamos un objeto de datos de identificación (iddata)
+Ts = 1; % Tu tiempo de muestreo en Arduino fue de 1 segundo
+datos_sistema = iddata(y, u, Ts);
+
+% Estimamos la función de transferencia
+% np = 1 (Un polo, típico de sistemas térmicos de primer orden)
+% nz = 0 (Cero ceros)
+np = 1;
+nz = 0;
+
+% tfest calcula los parámetros óptimos usando estimación de mínimos cuadrados
+funcion_transferencia = tfest(datos_sistema, np, nz);
+
+% --- 5. Resultados ---
+disp('La función de transferencia estimada (G(s)) es:');
+funcion_transferencia
+
+% Mostrar los parámetros K y Tau calculados por MATLAB
+% La estructura interna de tfest guarda el denominador como [tau 1] y numerador como [K]
+% si está en la forma estándar.
+K_estimado = funcion_transferencia.Numerator;
+Tau_estimado = funcion_transferencia.Denominator(1) / funcion_transferencia.Denominator(2);
+
+fprintf('\nGanancia Estática (K): %.4f\n', K_estimado);
+fprintf('Constante de Tiempo (Tau): %.4f segundos\n\n', Tau_estimado);
+
+% --- 6. Validación Gráfica ---
+figure;
+compare(datos_sistema, funcion_transferencia);
+title('Respuesta Real del Sensor vs Modelo Estimado G(s)');
+xlabel('Tiempo (s)');
+ylabel('\Delta Temperatura (°C)');
+grid on;
