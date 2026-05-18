@@ -1,0 +1,82 @@
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 bmp;
+
+// Temperatura base del frijol
+float TB = 10.0;
+
+// Variables
+float temperatura;
+float Tmax;
+float Tmin;
+float UC;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("SISTEMA DE FENOLOGIA DEL FRIJOL");
+}
+
+void loop() {
+
+  // Leer temperatura del BMP180
+  temperatura = bmp.readTemperature();
+
+  // Simulacion de Tmax y Tmin
+  Tmax = temperatura + 2;
+  Tmin = temperatura - 2;
+
+  // Formula de unidades calor
+  UC = ((Tmax + Tmin) / 2.0) - TB;
+
+  // Mostrar datos
+  Serial.println("---------------------------");
+
+  Serial.print("Temperatura actual: ");
+  Serial.print(temperatura);
+  Serial.println(" C");
+
+  Serial.print("Temperatura maxima: ");
+  Serial.print(Tmax);
+  Serial.println(" C");
+
+  Serial.print("Temperatura minima: ");
+  Serial.print(Tmin);
+  Serial.println(" C");
+
+  Serial.print("Unidades calor: ");
+  Serial.println(UC);
+
+  // Etapa fenologica
+  Serial.print("Etapa fenologica: ");
+
+  if (UC < 12.89) {
+    Serial.println("Germinacion");
+  }
+
+  else if (UC >= 12.89 && UC < 64.41) {
+    Serial.println("Emergencia");
+  }
+
+  else if (UC >= 64.41 && UC < 91.33) {
+    Serial.println("Formacion de guias");
+  }
+
+  else if (UC >= 91.33 && UC < 99.31) {
+    Serial.println("Floracion");
+  }
+
+  else if (UC >= 99.31 && UC < 112.77) {
+    Serial.println("Formacion de vaina");
+  }
+
+  else if (UC >= 112.77 && UC < 153.24) {
+    Serial.println("Llenado de vainas");
+  }
+
+  else {
+    Serial.println("Maduracion");
+  }
+
+  delay(5000);
+}
