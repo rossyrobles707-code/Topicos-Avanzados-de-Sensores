@@ -1,0 +1,31 @@
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 bmp;
+
+void setup() {
+  Serial.begin(9600);
+  if (!bmp.begin()) {
+	Serial.println("No se encontró el sensor BMP180. Verifica las conexiones.");
+	while (1) {}
+  }
+}
+
+void loop() {
+    // Lectura de presión en Pascales
+    float presion = bmp.readPressure();
+    
+    // Lectura de altitud calculada basada en la presión estándar 
+    // a nivel del mar (101325 Pa).
+    float altitud = bmp.readAltitude();
+
+    Serial.print("Presion: ");
+    Serial.print(presion);
+    Serial.print(" Pa | ");
+    
+    Serial.print("Altitud sobre el nivel del mar: ");
+    Serial.print(altitud);
+    Serial.println(" metros");
+
+    delay(2000); // Lectura cada 2 segundos para estabilizar
+}
