@@ -1,0 +1,44 @@
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 sensorBMP;
+
+// Configuración del LM35
+const int pinLM35 = A0;
+
+// Variables para el control del tiempo
+unsigned long tiempoInicio;
+
+void setup() {
+  Serial.begin(9600);
+  // Encabezados para facilitar la exportación a Excel / MATLAB
+  Serial.println("Tiempo(s),Temp_LM35(C),Temp_BMP(C)");
+  
+  // Guardamos el tiempo en el que arranca el experimento
+  tiempoInicio = millis();
+}
+
+void loop() {
+  // 1. Cálculo del tiempo transcurrido en segundos
+  unsigned long tiempoTranscurrido = millis() - tiempoInicio;
+  float segundos = tiempoTranscurrido / 1000.0;
+
+  // 2. Lectura y conversión del sensor LM35
+  // El Arduino tiene un ADC de 10 bits (0 a 1023) para 5V.
+  // El LM35 entrega 10mV por cada grado centígrado.
+  int valorADC = analogRead(pinLM35);
+  float voltaje = valorADC * (5.0 / 1023.0);
+  float tempLM35 = voltaje * 100.0;
+
+  // 3. Lectura del sensor de temperatura integrado en el BMP180
+  float tempBMP = sensorBMP.readTemperature();
+
+  // 4. Impresión en formato CSV (Valores separados por coma)
+  Serial.print(segundos, 1); Serial.print(",");
+  Serial.print(tempLM35, 2); Serial.print(",");
+  Serial.println(tempBMP, 2);
+
+  // Muestreo cada 1 segundo (1000 ms). 
+  // Los sistemas térmicos son lentos, 1 Hz es una excelente frecuencia de muestreo.
+  delay(1000); 
+}
