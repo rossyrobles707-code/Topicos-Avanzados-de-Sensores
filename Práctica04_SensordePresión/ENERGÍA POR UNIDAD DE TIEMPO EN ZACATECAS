@@ -1,0 +1,54 @@
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 sensorBMP;
+
+// --- Parámetros de configuración ---
+const float CTE_AIRE = 287.058; // Constante R para aire seco
+const float R_COLUMNA = 1.0;    // Radio en metros
+const float H_COLUMNA = 1.0;    // Altura en metros
+
+void setup() {
+  Serial.begin(9600);
+  
+  // Inicialización del dispositivo
+  if (!sensorBMP.begin()) {
+    Serial.println("Error: BMP180 no detectado.");
+    while (1); 
+  }
+  
+  Serial.println("--- Sistema de Monitoreo de Capa Atmosferica ---");
+  Serial.println("Unidad: UPIIZ - Zacatecas\n");
+}
+
+void loop() {
+  // 1. Obtención de datos crudos del sensor
+  float tempC = sensorBMP.readTemperature();
+  float presPa = sensorBMP.readPressure();
+  float altMSNM = sensorBMP.readAltitude();
+
+  // 2. Procesamiento físico
+  float tempK = tempC + 273.15;                 // Conversión a Kelvin
+  float presHecto = presPa / 100.0;             // Conversión a hPa
+
+  // Cálculo de Densidad (Ley de gases: rho = P / R*T)
+  float valDensidad = presPa / (CTE_AIRE * tempK);
+
+  // 3. Análisis de la columna de aire (Cilindro)
+  // Volumen = Pi * r^2 * h
+  float volCilindro = PI * pow(R_COLUMNA, 2) * H_COLUMNA;
+  float masaAire = valDensidad * volCilindro;
+
+  // 4. Salida de datos al Monitor Serie
+  Serial.println(">>>> DATOS AMBIENTALES <<<<");
+  Serial.print("Temperatura:  "); Serial.print(tempC); Serial.println(" C");
+  Serial.print("Presion:     "); Serial.print(presHecto); Serial.println(" hPa");
+  Serial.print("Altitud:     "); Serial.print(altMSNM); Serial.println(" msnm");
+  
+  Serial.println("\n>>>> ANALISIS DE DENSIDAD <<<<");
+  Serial.print("Densidad Local: "); Serial.print(valDensidad, 4); Serial.println(" kg/m3");
+  Serial.print("Masa en Columna (1m3): "); Serial.print(masaAire, 4); Serial.println(" kg");
+  Serial.println("------------------------------------------\n");
+
+  delay(2500); // Pausa para legibilidad
+}
