@@ -1,0 +1,64 @@
+#include <Wire.h>
+#include <Adafruit_AHTX0.h>
+#include <Adafruit_BMP280.h> // Librería para tu BMP280
+
+// Crear los objetos para los sensores I2C
+Adafruit_AHTX0 aht;
+Adafruit_BMP280 bmp;
+
+// Definir el pin donde conectarás la patita de en medio del LM35
+const int pinLM35 = A0; 
+
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+  
+  Wire.begin();
+  
+  // Inicializamos el AHT20
+  if (!aht.begin()) {
+    Serial.println("Error: No se encontró el AHT20");
+  }
+  
+  // Inicializamos el BMP280
+  // NOTA: Si al correrlo te marca error aquí, cambia bmp.begin() por bmp.begin(0x76)
+  if (!bmp.begin()) {
+    Serial.println("Error: No se encontró el BMP280");
+  }
+  
+  delay(500);
+}
+
+void loop() {
+  // 1. Obtener datos del AHT20
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
+
+  // 2. Obtener datos del BMP280
+  float tempBMP = bmp.readTemperature();
+
+  // 3. Obtener datos del LM35
+  int lecturaAnalogica = analogRead(pinLM35); // Lee un valor entre 0 y 1023
+  
+  // Convertimos esa lectura analógica a voltaje (Asumiendo que alimentas el LM35 con 5V)
+  float voltaje = lecturaAnalogica * (5.0 / 1023.0);
+  
+  // El LM35 entrega 10mV por cada Grado Centígrado (1V = 100°C)
+  float tempLM35 = voltaje * 100.0;
+
+ // 4. Imprimir todo en el Monitor Serie con etiquetas
+  Serial.print("Valor de BMP280: ");
+  Serial.print(tempBMP);
+  
+  Serial.print(" °C, Valor de AHT20: ");
+  Serial.print(temp.temperature);
+  
+  Serial.print(" °C, Valor de LM35: ");
+  Serial.print(tempLM35);
+  
+  Serial.print(" °C, Humedad AHT20: ");
+  Serial.print(humidity.relative_humidity);
+  Serial.println(" %"); // El println da el salto de línea al final
+
+  // Pausa de 2 segundos entre cada lectura
+  delay(2000);
