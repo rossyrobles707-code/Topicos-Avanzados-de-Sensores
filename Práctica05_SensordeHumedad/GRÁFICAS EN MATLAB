@@ -1,33 +1,43 @@
-%Datos de tiempo y temperatura
-% Creamos un vector de tiempo: 15 muestras distribuidas de 0 a 78 segundos
+% --- Datos de tiempo, temperatura y humedad ---
+% Vector de tiempo: 15 muestras en 78 segundos
 t = linspace(0, 78, 15); 
 
-% Vectores con las temperaturas extraídas de tu Monitor Serie
+% Vectores de temperatura
 tempBMP = [25.46, 25.46, 25.47, 25.46, 25.45, 25.43, 25.42, 25.43, 25.49, 25.58, 25.70, 25.83, 25.96, 26.10, 26.27];
 tempAHT = [25.50, 25.49, 25.51, 25.50, 25.50, 25.48, 25.45, 25.47, 25.53, 25.61, 25.75, 25.88, 26.00, 26.13, 26.30];
 tempLM35 = [24.44, 24.44, 24.44, 24.44, 24.44, 24.93, 24.44, 23.95, 24.44, 24.44, 24.93, 24.93, 25.42, 25.42, 25.90];
 
-% --- Configuración de la figura y la gráfica ---
-figure('Name', 'Respuesta Térmica de Sensores', 'Color', 'w');
+% Vector de humedad
+humAHT = [60.42, 60.75, 60.91, 60.88, 60.88, 61.00, 60.86, 60.47, 60.02, 59.59, 59.19, 59.04, 58.74, 58.32, 57.97];
+
+% --- Configuración de la figura ---
+figure('Name', 'Respuesta Térmica y Humedad', 'Color', 'w');
+
+% --- EJE Y IZQUIERDO: Temperaturas ---
+yyaxis left;
+plot(t, tempBMP, '-o', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'T. BMP280');
 hold on;
+plot(t, tempAHT, '-s', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'T. AHT20');
+plot(t, tempLM35, '-^', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'T. LM35');
+ylabel('Temperatura (°C)', 'FontSize', 12, 'FontWeight', 'bold');
+
+% --- EJE Y DERECHO: Humedad ---
+yyaxis right;
+plot(t, humAHT, '-d', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'Humedad AHT20');
+ylabel('Humedad Relativa (%)', 'FontSize', 12, 'FontWeight', 'bold');
+
+% --- Formato general de la gráfica ---
 grid on;
 
-% Graficamos cada sensor con un color y marcador diferente para distinguirlos bien
-plot(t, tempBMP, '-o', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'BMP280');
-plot(t, tempAHT, '-s', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'AHT20');
-plot(t, tempLM35, '-^', 'LineWidth', 1.5, 'MarkerSize', 6, 'DisplayName', 'LM35');
+% Línea vertical en t = 10 (se añade 'HandleVisibility','off' para que no salga en la leyenda)
+xline(10, '--k', 'Inicio de calor', 'LineWidth', 1.5, ...
+    'LabelVerticalAlignment', 'bottom', 'FontSize', 10, 'HandleVisibility', 'off');
 
-% Agregamos una línea vertical en t = 10 para marcar el límite sin calor
-xline(10, '--r', 'Inicio de aplicación de calor', ...
-    'LineWidth', 1.5, 'LabelVerticalAlignment', 'bottom', ...
-    'LabelHorizontalAlignment', 'left', 'FontSize', 10);
-
-% --- Formato y etiquetas ---
+% Etiquetas y título
 xlabel('Tiempo (Segundos)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Temperatura (°C)', 'FontSize', 12, 'FontWeight', 'bold');
-title('Curvas de Temperatura: BMP280 vs AHT20 vs LM35', 'FontSize', 14);
+title('Respuesta de Sensores: Temperatura vs Humedad', 'FontSize', 14);
 
 % Configuración de la leyenda
-legend('Location', 'northwest', 'FontSize', 10);
+legend('Location', 'west', 'FontSize', 10);
 
 hold off;
