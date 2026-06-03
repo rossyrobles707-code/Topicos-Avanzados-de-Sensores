@@ -1,0 +1,28 @@
+#include <MQ135.h>
+
+#define PIN_MQ135 A0 // Cable de señal conectado al pin A0
+
+MQ135 mq135_sensor(PIN_MQ135);
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("--- PRUEBA DINÁMICA DEL MQ-135 ---");
+}
+
+void loop() {
+  // 1. Lectura CRUDA real del sensor 
+  int valorCrudo = analogRead(PIN_MQ135);
+  
+  // 2. Lectura matemática de la librería 
+  float ppm_libreria = mq135_sensor.getPPM();
+
+  // --- IMPRESIÓN EN MONITOR SERIE ---
+  
+  Serial.print("Valor Crudo: ");
+  Serial.print(valorCrudo);
+  
+  Serial.print("   |   PPM (Libreria): ");
+  Serial.println(ppm_libreria, 2); 
+
+  delay(1000); 
+}
