@@ -1,0 +1,50 @@
+const float RL = 10.0; // Verifica que siga siendo 10k en tu placa
+const float a_Etanol = 77.255; 
+const float b_Etanol = -3.18; 
+
+float R0 = 0; 
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Calibrando sensor en aire limpio...");
+  
+  float Rs_sum = 0;
+  int lecturas = 50;
+  
+  for(int i = 0; i < lecturas; i++) {
+    int valorADC = analogRead(pinSensor);
+    float voltaje = valorADC * (5.0 / 1023.0);
+    if (voltaje == 0) voltaje = 0.001; 
+    
+    float Rs = RL * ((5.0 - voltaje) / voltaje);
+    Rs_sum += Rs;
+    delay(100);
+  }
+  
+  float Rs_aire = Rs_sum / lecturas;
+  R0 = Rs_aire / 3.6;
+  
+  Serial.print("Calibracion completa. R0 = ");
+  Serial.println(R0);
+  Serial.println("--- LISTO PARA LA PRUEBA DE ALIENTO ---");
+  Serial.println("PPM_Etanol, BAC_Estimado"); 
+}
+
+void loop() {
+  int valorADC = analogRead(pinSensor);
+  float voltaje = valorADC * (5.0 / 1023.0);
+  if (voltaje == 0) voltaje = 0.001; 
+
+  float Rs = RL * ((5.0 - voltaje) / voltaje);
+  float ratio = Rs / R0;
+  
+  // Cálculo de PPM de Etanol
+  float ppm_Etanol = a_Etanol * pow(ratio, b_Etanol);
+  
+ 
+  Serial.print(ppm_Etanol, 2);
+  Serial.print(" , ");
+  Serial.println(nivel_BAC, 4);
+  
+  delay(500); 
+}
