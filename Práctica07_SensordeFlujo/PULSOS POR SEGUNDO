@@ -1,0 +1,29 @@
+volatile unsigned long pulseCount = 0;
+unsigned long lastTime = 0;
+const byte sensorPin = 2;
+
+void countPulses() {
+  pulseCount++;
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(sensorPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(sensorPin), countPulses, RISING);
+}
+
+void loop() {
+  if (millis() - lastTime >= 1000) {
+    noInterrupts();
+    unsigned long pulses = pulseCount;
+    pulseCount = 0;
+    interrupts();
+
+    lastTime = millis();
+
+    float flowRate = pulses / 7.5;
+
+    Serial.print("Pulsos por segundo (L/min): ");
+    Serial.println(flowRate, 2);
+  }
+}
