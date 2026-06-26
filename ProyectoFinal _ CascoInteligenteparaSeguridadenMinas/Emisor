@@ -1,0 +1,26 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+// Pines CE y CSN configurados en 9 y 10
+RF24 radio(9, 10);
+
+// Dirección de comunicación
+const byte direccion[6] = "00001";
+
+void setup() {
+  radio.begin();
+  radio.openWritingPipe(direccion);
+  radio.setPALevel(RF24_PA_MIN); // Nivel mínimo para pruebas de escritorio
+  radio.stopListening();         // Modo emisor
+}
+
+void loop() {
+  // El mensaje que queremos enviar
+  const char texto[] = "hi";
+  
+  // Enviamos el texto
+  radio.write(&texto, sizeof(texto));
+  
+  delay(1000); // Esperamos 1 segundo antes de enviar de nuevo
+}
