@@ -1,0 +1,82 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+// Pines CE y CSN configurados en 9 y 10
+RF24 radio(9, 10);
+
+// Dirección de comunicación (Debe ser idéntica a la del emisor)
+const byte direccion[6] = "00001";
+
+// Estructura de Telemetría 
+struct TelemetriaCasco {
+  float temperatura;
+  float presion;
+  int ppmGas;
+  int estadoGeneral;       // 0=Seguro, 1=Alerta, 2=Grave
+  bool huboImpacto;        
+  bool mineroInconsciente; 
+};
+TelemetriaCasco paqueteDatos;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println(F("Iniciando Base Receptora SentryMine..."));
+
+  if (!radio.begin()) {
+    Serial.println(F("Error: No se detectó el módulo nRF24L01 receptor."));
+    while (1); 
+  }
+
+  radio.openReadingPipe(1, direccion);
+  radio.setPALevel(RF24_PA_MIN); // Nivel mínimo para pruebas de escritorio
+  radio.startListening();        // Configurar en modo RECEPTOR
+  
+  Serial.println(F("Base lista. Esperando telemetría inalámbrica..."));
+}
+
+void loop() {
+  // Verificar si hay datos recibidos en el aire
+  if (radio.available()) {
+    
+    // Leer el paquete de datos completo y guardarlo en la estructura
+    radio.read(&paqueteDatos, sizeof(paqueteDatos));
+
+    // --- IMPRIMIR TELEMETRÍA EN MONITOR SERIE ---
+    Serial.println(F("====================================="));
+    Serial.println(F("      DATOS RECIBIDOS DEL CASCO      "));
+    Serial.println(F("====================================="));
+    
+    Serial.print(F("Temperatura: ")); 
+    Serial.print(paqueteDatos.temperatura, 1); 
+    Serial.println(F(" C"));
+    
+    Serial.print(F("Gas:         ")); 
+    Serial.print(paqueteDatos.ppmGas);
+    Serial.println(F(" PPM"));
+    
+    Serial.print(F("Presión:     ")); 
+    Serial.print(paqueteDatos.presion, 1); 
+    Serial.println(F(" mbar"));
+    
+    Serial.print(F("Estado:      "));
+    if (paqueteDatos.estadoGeneral == 0) {
+      Serial.println(F("SEGURO (Verde)"));
+    } else if (paqueteDatos.estadoGeneral == 1) {
+      Serial.println(F("ALERTA (Amarillo)"));
+    } else if (paqueteDatos.estadoGeneral == 2) {
+      Serial.println(F("GRAVE (Rojo)"));
+    }
+
+    // Alertas críticas basadas en las banderas del Hombre Muerto e Impactos
+    if (paqueteDatos.huboImpacto) {
+      Serial.println(F(">>> ¡¡ALERTA CRÍTICA: SE DETECTÓ UNA CAÍDA!! <<<"));
+    }
+    
+    if (paqueteDatos.mineroInconsciente) {
+      Serial.println(F(">>> ¡¡ALERTA MÁXIMA: MINERO INCONSCIENTE / SIN RESPUESTA!! <<<"));
+    }
+    
+    Serial.println(); // Espacio libre para la siguiente ráfaga de datos
+  }
+}
